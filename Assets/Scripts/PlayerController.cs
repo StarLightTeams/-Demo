@@ -26,27 +26,47 @@ public class PlayerController : MonoBehaviour {
     [Range(0, 0.5f)]
     public float groundDistance;
 
-    [Header("侦测地板的射线起点")]
+    [Header("侦测地板的射线起点 中间")]
     public Transform groundCheck;
+    [Header("侦测地板的射线起点 左边")]
+    public Transform groundCheckL;
+    [Header("侦测地板的射线起点 右边")]
+    public Transform groundCheckR;
 
     [Header("地面图层")]
     public LayerMask groundLayer;
 
     [Header("是否在地面")]
     public bool grounded;
+    public bool groundedM;
+    public bool groundedL;
+    public bool groundedR;
 
     //在玩家底部射出一条很短的射线,如果射线有打到地板图层的话,代表正在踩着地板
     bool isGround
     {
         get
         {
-            Vector2 start = groundCheck.position;
-            Vector2 end = new Vector2(start.x, start.y - groundDistance);
-            //把射线画出来
-            Debug.DrawLine(start, end, Color.blue);
-            grounded = Physics2D.Linecast(start, end, groundLayer);
+            groundedM = getGroundInfo(groundCheck);
+            groundedL = getGroundInfo(groundCheckL);
+            groundedR = getGroundInfo(groundCheckR);
+
+            grounded = groundedL || groundedM || groundedR;
             return grounded;
         }
+    }
+    /// <summary>
+    /// 获得碰到地面信息
+    /// </summary>
+    /// <returns></returns>
+    bool getGroundInfo(Transform groundCheck)
+    {
+        Vector2 start = groundCheck.position;
+        Vector2 end = new Vector2(start.x, start.y - groundDistance);
+        //把射线画出来
+        Debug.DrawLine(start, end, Color.blue);
+        grounded = Physics2D.Linecast(start, end, groundLayer);
+        return grounded;
     }
 
     public bool JumpKey
