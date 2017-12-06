@@ -252,9 +252,9 @@ public class PlayerController : MonoBehaviour {
     {
         horizontalDirection = Input.GetAxis(HORIZONTAL);
         player.AddForce(new Vector2(xForce * horizontalDirection, 0));
+        print("player.vx==" + player.velocity.x+ ",xForce="+xForce+ ",horizontalDirection="+ horizontalDirection);
         if (!isWallJump)
         {
-
             transform.localScale = JudgePlayerTurn(horizontalDirection);
         }
        
