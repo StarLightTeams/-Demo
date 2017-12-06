@@ -555,11 +555,11 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4206185903368562, guid: 354d28ffeadad9d48ba47b372e30f467, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 229.6
+      value: -17.8
       objectReference: {fileID: 0}
     - target: {fileID: 4206185903368562, guid: 354d28ffeadad9d48ba47b372e30f467, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 38.97
+      value: 6.9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 354d28ffeadad9d48ba47b372e30f467, type: 2}
