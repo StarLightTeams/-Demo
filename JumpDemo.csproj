@@ -80,6 +80,9 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\AudioManager.cs" />
     <Compile Include="Assets\Scripts\Award_blue.cs" />
+    <Compile Include="Assets\Scripts\BlockController.cs" />
+    <Compile Include="Assets\Scripts\BrokenBlockController.cs" />
+    <Compile Include="Assets\Scripts\DoorController.cs" />
     <Compile Include="Assets\Scripts\Enemy.cs" />
     <Compile Include="Assets\Scripts\FollowPeople.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />

@@ -135,18 +135,24 @@ public class PlayerController : MonoBehaviour {
 
     }
 
+    [Header("是否控制")]
+    public bool isControll = true;
+
     void Start () {
         player = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
     }
 
     void Update() {
+        if (isControll)
+        {
             MoveMentX();
-        wallJump();
-        ControllSpeed();
+            wallJump();
+            ControllSpeed();
             TryJump();
+            animOperate();
+        }
 
-        animOperate();
         ////获得玩家的速度
         //Vector2 velocity = player.velocity;
 
@@ -232,6 +238,11 @@ public class PlayerController : MonoBehaviour {
         speedY = player.velocity.y;
         float newSpeedX = Mathf.Clamp(speedX, -maxSpeedX, maxSpeedX);
         player.velocity = new Vector2(newSpeedX, speedY);
+    }
+
+    public void Move(float horizontalDirection)
+    {
+        player.AddForce(new Vector2(xForce * horizontalDirection, 0));
     }
 
     /// <summary>
