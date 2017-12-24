@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
+    [Header("图片变换X大小")]
+    public int targetScaleX=1;
+
+    [Header("图片变换Y大小")]
+    public int targetScaleY=1;
+
     [Header("目前的水平速度")]
     public float speedX;
 
@@ -45,6 +51,9 @@ public class PlayerController : MonoBehaviour {
     //在玩家底部射出一条很短的射线,如果射线有打到地板图层的话,代表正在踩着地板
     bool isGround
     {
+
+        set
+        { grounded = value; }
         get
         {
             groundedM = getGroundInfo(groundCheck);
@@ -69,19 +78,11 @@ public class PlayerController : MonoBehaviour {
         return grounded;
     }
 
-    public bool JumpKey
-    {
-        get
-        {
-            return Input.GetKeyDown(KeyCode.Space);
-        }
-    }
-
     [Header("目前的水平方向")]
     public float horizontalDirection;
 
-    [Header("水平方向(-1为左,1为右)")]
-    public int turn = 1;//转向
+    [Header("水平方向(-为左,+为右)")]
+    public int turn;//转向
 
     [Header("水平推力")]
     [Range(0, 200)]
@@ -138,12 +139,49 @@ public class PlayerController : MonoBehaviour {
     [Header("是否控制")]
     public bool isControll = true;
 
+    [Header("跳跃力的大小")]
+    public Vector2 jumpVector = new Vector2(0, 700);
+    [Header("二段跳力的大小")]
+    public Vector2 jump2Vector = new Vector2(0, 600);
+
+
+    [Header("跳跃停留的时间")]
+    public float jumpTime = 0.5f;
+    public  bool jumping = false;
+    bool isJumpButtonPressed
+    {
+        get
+        {
+            return Input.GetKey(KeyCode.Space);
+        }
+    }
+
+    //bool isJumpButton = false;
+    //bool isDoubleJumpButton = false;
+
+    //public bool startWallJump = false;
+
     void Start () {
         player = GetComponent<Rigidbody2D>();
+        player.transform.localScale = new Vector3(targetScaleX,targetScaleY,1);
+        turn = targetScaleX;
         anim = GetComponent<Animator>();
     }
 
-    void Update() {
+    //void FixedUpdate()
+    //{
+    //    if (isControll)
+    //    {
+    //        MoveMentX();
+    //        wallJump();
+    //        ControllSpeed();
+    //        TryJump();
+    //        animOperate();
+    //    }
+    //}
+
+    void Update()
+    {
         if (isControll)
         {
             MoveMentX();
@@ -200,19 +238,37 @@ public class PlayerController : MonoBehaviour {
 
     }
 
+    //void OnGUI()
+    //{
+    //    if (isControll)
+    //    {
+    //        MoveMentX();
+    //        wallJump();
+    //        ControllSpeed();
+    //        TryJump();
+    //        animOperate();
+    //    }
+    //}
+
     public void wallJump()
     {
+        //if (isWall && !isGround)
+        //{
+        //    player.velocity = new Vector2(0, player.velocity.y);
+        //    turn = -1 * turn;
+        //    transform.localScale = new Vector3(turn, 1, 1);
+        //}
         if (isWall && !isGround && Input.GetKeyDown(KeyCode.Space)&& !isDoubleJumping)
         {
             //print("jjjjj=" + hit.normal.x + ",,,,,,,,,,,,=" + hit.normal.y);
             //playerRigidbody2D.velocity = new Vector2(0, 0);
-            print("wallspeed=" + wallSpeed);
+            //print("wallspeed=" + wallSpeed);
             player.velocity = new Vector2(wallSpeed * hit.normal.x, 80f);
 
             isWallJump = true;
             //wallCheck.position = new Vector3(turn*wallCheck.position.x, wallCheck.position.y, wallCheck.position.z);
-            turn = -1 * turn; 
-            transform.localScale = new Vector3(turn, 1, 1);
+            turn = -1 * turn;
+            transform.localScale = new Vector3(turn, targetScaleY, 1);
 
             //print("jump" + transform.localScale.x);
         }
@@ -227,6 +283,7 @@ public class PlayerController : MonoBehaviour {
         anim.SetBool("isRun", JudgePlayerMove(horizontalDirection));
         anim.SetFloat("vertical",player.velocity.y);
         anim.SetBool("isWall", walled && !grounded);
+        anim.SetBool("isJump", isJumping);
     }
 
     /// <summary>
@@ -240,11 +297,6 @@ public class PlayerController : MonoBehaviour {
         player.velocity = new Vector2(newSpeedX, speedY);
     }
 
-    public void Move(float horizontalDirection)
-    {
-        player.AddForce(new Vector2(xForce * horizontalDirection, 0));
-    }
-
     /// <summary>
     /// 水平移动
     /// </summary>
@@ -252,7 +304,7 @@ public class PlayerController : MonoBehaviour {
     {
         horizontalDirection = Input.GetAxis(HORIZONTAL);
         player.AddForce(new Vector2(xForce * horizontalDirection, 0));
-        print("player.vx==" + player.velocity.x+ ",xForce="+xForce+ ",horizontalDirection="+ horizontalDirection);
+        //print("player.vx==" + player.velocity.x + ",xForce=" + xForce + ",horizontalDirection=" + horizontalDirection);
         if (!isWallJump)
         {
             transform.localScale = JudgePlayerTurn(horizontalDirection);
@@ -263,44 +315,141 @@ public class PlayerController : MonoBehaviour {
     /// <summary>
     /// 跳跃和二段跳
     /// </summary>
+    //void TryJump()
+    //{
+    //    if (JumpKey)
+    //    {
+    //        if (!isJumping)
+    //        {
+    //            player.AddForce(Vector2.up * jumpSpeed*10);
+    //            isJumping = true;
+    //        }
+    //        else
+    //        {
+    //            if (JumpKey)
+    //            {
+    //                if (isDoubleJumping || isWallJump)//判断是否在二段跳    
+    //                {
+    //                    return;//否则不能二段跳    
+    //                }
+    //                //else if (walled) //判断是否贴墙,即是否可以贴墙跳
+    //                //{
+    //                //    print("wallspeed=" + wallSpeed);
+    //                //    player.velocity = new Vector2(wallSpeed * hit.normal.x, 80f);
+
+    //                //    isWallJump = true;
+    //                //    //wallCheck.position = new Vector3(turn*wallCheck.position.x, wallCheck.position.y, wallCheck.position.z);
+    //                //    transform.localScale = new Vector3(-turn, 1, 1);
+    //                //}
+    //                else
+    //                {
+    //                    isDoubleJumping = true;
+    //                    print("22222222=" + Vector2.up * jumpSpeed * 10*2);
+    //                }
+    //            }
+    //        }
+    //    }
+    //    if (isJumping)
+    //    {
+    //        grounded = false;
+    //    }
+    //}
+
+    bool isButtonDown = false;
+    //bool isButtonDown2 = false;
+    IEnumerator jumpOnce;
+    //IEnumerator jumpTwice;
+
     void TryJump()
     {
-        if (JumpKey)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (!isJumping)
-            {
-                player.AddForce(Vector2.up * jumpSpeed*10);
+            isButtonDown = true;
+            //print("isJumping=" + isJumping);
+            //print("jumping=" + jumping);
+            if(!isJumping){
+
+                jumping = true;
                 isJumping = true;
+                //print("跳跃协程开始=");
+                jumpOnce = JumpRoutine(1);
+                StartCoroutine(jumpOnce);
             }
             else
             {
-                if (JumpKey)
+                if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    if (isDoubleJumping || isWallJump)//判断是否在二段跳    
+                    StopCoroutine(jumpOnce);
+                    jumping = false;
+                    if (!jumping)
                     {
-                        return;//否则不能二段跳    
-                    }
-                    //else if (walled) //判断是否贴墙,即是否可以贴墙跳
-                    //{
-                    //    print("wallspeed=" + wallSpeed);
-                    //    player.velocity = new Vector2(wallSpeed * hit.normal.x, 80f);
 
-                    //    isWallJump = true;
-                    //    //wallCheck.position = new Vector3(turn*wallCheck.position.x, wallCheck.position.y, wallCheck.position.z);
-                    //    transform.localScale = new Vector3(-turn, 1, 1);
-                    //}
-                    else
-                    {
-                        isDoubleJumping = true;
-                        player.AddForce(Vector2.up * jumpSpeed*10);
+                        if (isDoubleJumping || isWallJump)//判断是否在二段跳    
+                        {
+                            return;//否则不能二段跳    
+                        }
+                        else
+                        {
+                            isDoubleJumping = true;
+                            //print("二段跳协程开始");
+                            StartCoroutine(JumpRoutine(2));
+                        }
                     }
                 }
             }
         }
+        //else if ( Input.GetKeyUp(KeyCode.Space) && isButtonDown)
+        //{
+        //    isButtonDown = false;
+        //}
         if (isJumping)
         {
             grounded = false;
         }
+    }
+
+    //IEnumerator DoubleJumpRoutine()
+    //{
+    //    player.velocity = Vector2.zero;
+    //    float timer = 0;
+    //    while (timer < jumpTime)
+    //    {
+    //        float proportionCompleted = timer / jumpTime;
+    //        Vector2 thisFrameJumpVector = Vector2.Lerp(jump2Vector, Vector2.zero, proportionCompleted);
+    //        player.AddForce(thisFrameJumpVector);
+    //        timer += Time.deltaTime;
+    //        yield return null;
+    //    }
+
+    //    isDoubleJump = false;
+    //}
+
+    IEnumerator JumpRoutine(int type)
+    {
+        player.velocity = Vector2.zero;
+        float timer = 0;
+        while (timer<jumpTime)
+        {
+            float proportionCompleted = timer / jumpTime;
+            //print("isJumpButtonPressed=" + isJumpButtonPressed);
+            if (proportionCompleted > 0.4 && !isJumpButtonPressed)
+            {
+                jumping = false;
+                //print("协程中断结束=" + jumping);
+                //print("isJumping=" + isJumping);
+                yield break;
+            }
+            Vector2 v = type == 1 ? jumpVector : jump2Vector;
+            Vector2 thisFrameJumpVector = Vector2.Lerp(v, Vector2.zero, proportionCompleted);
+            player.AddForce(thisFrameJumpVector);
+            timer += Time.deltaTime;
+            //print("hhhhhhhhhh="+jumping+"is="+isJumping);
+            yield return null;
+        }
+        jumping = false;
+        //print("协程结束="+jumping);
+        //print("isJumping=" + isJumping);
+
     }
 
 
@@ -308,12 +457,22 @@ public class PlayerController : MonoBehaviour {
     //发生碰撞
     public void OnCollisionEnter2D(Collision2D col)
     {
+        
         if (isGround)
         {
+            //jumping = false;
             isJumping = false;
-            isDoubleJumping = false;
             isWallJump = false;
+            isDoubleJumping = false;
+            //startWallJump = false;
         }
+        //print("ground=" + grounded);
+        //print("isJumping=" + isJumping);
+        //if(walled && !grounded)
+        //{
+        //    print("kkkkkkkkk");
+        //    startWallJump = true;
+        //}
         //if (walled)
         //{
         //    isWallJump = false;
@@ -408,14 +567,14 @@ public class PlayerController : MonoBehaviour {
     {
         if (x > 0.05)
         {
-            turn = 1;//朝右方向
+            turn = targetScaleX;//朝右方向
         }
         else if(x<-0.05)
         {
-            turn =-1;//朝左方向
+            turn =-1*targetScaleX;//朝左方向
         }
         
-        return new Vector3(turn, 1, 1);
+        return new Vector3(turn, targetScaleY, 1);
     }
 
     /// <summary>
